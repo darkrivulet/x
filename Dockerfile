@@ -1,6 +1,14 @@
-FROM alpine:latest
-RUN wget https://github.com/txthinking/brook/releases/latest/download/brook_linux_amd64 -O /usr/bin/brook; \
-    chmod +x /usr/bin/brook; \
-    adduser -D brook
-USER brook
-CMD brook wsserver --listen :$PORT --password hello
+FROM debian:latest
+
+COPY xray /usr/bin/xray
+COPY geoip.dat /usr/bin/geoip.dat
+COPY geosite.dat /usr/bin/geosite.dat
+
+RUN chmod +x /usr/bin/xray; \
+    useradd -m xray
+
+USER xray
+
+COPY config.json /home/xray/config.json
+
+CMD sh -c "sed -i 's/PORT/'$PORT'/g' /home/xray/config.json | xray run -c /home/xray/config.json"
